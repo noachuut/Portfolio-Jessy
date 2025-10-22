@@ -1,258 +1,331 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Trash2, Plus } from "lucide-react";
+import { Pencil, Trash2, Plus, Upload, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePortfolioData, isValidPortfolioData } from "@/lib/portfolio-data";
+import defaultData from "@/data/defaultData";
+import type { Mission, Experience, SkillCategory, Article, PersonalInfo, PortfolioData } from "@/types/portfolio";
 
-interface Mission {
-  id: string;
-  title: string;
-  context: string;
-  objectifs: string[];
-  outils: string[];
-  resultats: string;
-  competences: string[];
-}
+const EMPTY_MISSION_FORM = {
+  title: "",
+  context: "",
+  objectifs: "",
+  outils: "",
+  resultats: "",
+  competences: "",
+};
 
-interface Experience {
-  id: string;
-  title: string;
-  company: string;
-  period: string;
-  location: string;
-  type: string;
-  missions: string[];
-  skills: string[];
-}
+const EMPTY_EXPERIENCE_FORM = {
+  title: "",
+  company: "",
+  period: "",
+  location: "",
+  type: "",
+  missions: "",
+  skills: "",
+};
 
-interface Skill {
-  id: string;
-  category: string;
-  skills: string[];
-}
+const EMPTY_SKILL_FORM = {
+  category: "",
+  skills: "",
+};
 
-interface PersonalInfo {
-  name: string;
-  title: string;
-  specialization: string;
-  description: string;
-}
+const EMPTY_ARTICLE_FORM = {
+  title: "",
+  description: "",
+  date: "",
+  category: "",
+  tags: "",
+  url: "",
+};
 
-interface Article {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  category: string;
-  tags: string[];
-  url: string;
-}
+const createId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
 const Admin = () => {
   const { toast } = useToast();
-  
-  // State management
-  const [missions, setMissions] = useState<Mission[]>([]);
-  const [experiences, setExperiences] = useState<Experience[]>([]);
-  const [skillCategories, setSkillCategories] = useState<Skill[]>([]);
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
-    name: "Jessy Amestoy",
-    title: "Étudiant en BTS SIO SISR",
-    specialization: "Spécialiste Réseaux",
-    description: "Passionné par les infrastructures réseau et l'administration système, je développe mes compétences techniques à travers des projets concrets et des missions professionnelles. Mon objectif : devenir technicien réseau ou administrateur systèmes, avec une vision d'évolution vers une licence professionnelle."
-  });
-  
-  // Form states
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { data, isLoading, updateSection, importData } = usePortfolioData();
+
+  const [missions, setMissions] = useState<Mission[]>(defaultData.missions);
+  const [experiences, setExperiences] = useState<Experience[]>(defaultData.experiences);
+  const [skillCategories, setSkillCategories] = useState<SkillCategory[]>(defaultData.skills);
+  const [articles, setArticles] = useState<Article[]>(defaultData.articles);
+  const [personalInfo, setPersonalInfo] = useState<PersonalInfo>(defaultData.personalInfo);
+
   const [editingMission, setEditingMission] = useState<Mission | null>(null);
   const [editingExperience, setEditingExperience] = useState<Experience | null>(null);
-  const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
+  const [editingSkill, setEditingSkill] = useState<SkillCategory | null>(null);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
 
-  // Load data from localStorage on mount
+  const [personalInfoForm, setPersonalInfoForm] = useState<PersonalInfo>(defaultData.personalInfo);
+  const [missionForm, setMissionForm] = useState(EMPTY_MISSION_FORM);
+  const [experienceForm, setExperienceForm] = useState(EMPTY_EXPERIENCE_FORM);
+  const [skillForm, setSkillForm] = useState(EMPTY_SKILL_FORM);
+  const [articleForm, setArticleForm] = useState(EMPTY_ARTICLE_FORM);
+
   useEffect(() => {
-    const storedMissions = localStorage.getItem("portfolio_missions");
-    const storedExperiences = localStorage.getItem("portfolio_experiences");
-    const storedSkills = localStorage.getItem("portfolio_skills");
-    const storedArticles = localStorage.getItem("portfolio_articles");
-    const storedPersonalInfo = localStorage.getItem("portfolio_personal_info");
-    
-    if (storedMissions) setMissions(JSON.parse(storedMissions));
-    if (storedExperiences) setExperiences(JSON.parse(storedExperiences));
-    if (storedSkills) setSkillCategories(JSON.parse(storedSkills));
-    if (storedArticles) setArticles(JSON.parse(storedArticles));
-    if (storedPersonalInfo) setPersonalInfo(JSON.parse(storedPersonalInfo));
-  }, []);
+    if (data) {
+      setMissions(data.missions);
+      setExperiences(data.experiences);
+      setSkillCategories(data.skills);
+      setArticles(data.articles);
+      setPersonalInfo(data.personalInfo);
+      setEditingMission(null);
+      setEditingExperience(null);
+      setEditingSkill(null);
+      setEditingArticle(null);
+    }
+  }, [data]);
 
-  // Save to localStorage
-  const saveMissions = (data: Mission[]) => {
-    localStorage.setItem("portfolio_missions", JSON.stringify(data));
-    setMissions(data);
+  useEffect(() => {
+    setPersonalInfoForm({ ...personalInfo });
+  }, [personalInfo]);
+
+  useEffect(() => {
+    if (editingMission) {
+      setMissionForm({
+        title: editingMission.title,
+        context: editingMission.context,
+        objectifs: editingMission.objectifs.join("\n"),
+        outils: editingMission.outils.join(", "),
+        resultats: editingMission.resultats,
+        competences: editingMission.competences.join(", "),
+      });
+    } else {
+      setMissionForm({ ...EMPTY_MISSION_FORM });
+    }
+  }, [editingMission]);
+
+  useEffect(() => {
+    if (editingExperience) {
+      setExperienceForm({
+        title: editingExperience.title,
+        company: editingExperience.company,
+        period: editingExperience.period,
+        location: editingExperience.location,
+        type: editingExperience.type,
+        missions: editingExperience.missions.join("\n"),
+        skills: editingExperience.skills.join(", "),
+      });
+    } else {
+      setExperienceForm({ ...EMPTY_EXPERIENCE_FORM });
+    }
+  }, [editingExperience]);
+
+  useEffect(() => {
+    if (editingSkill) {
+      setSkillForm({
+        category: editingSkill.category,
+        skills: editingSkill.skills.join(", "),
+      });
+    } else {
+      setSkillForm({ ...EMPTY_SKILL_FORM });
+    }
+  }, [editingSkill]);
+
+  useEffect(() => {
+    if (editingArticle) {
+      setArticleForm({
+        title: editingArticle.title,
+        description: editingArticle.description,
+        date: editingArticle.date,
+        category: editingArticle.category,
+        tags: editingArticle.tags.join(", "),
+        url: editingArticle.url,
+      });
+    } else {
+      setArticleForm({ ...EMPTY_ARTICLE_FORM });
+    }
+  }, [editingArticle]);
+
+  const buildPortfolioData = (): PortfolioData => ({
+    personalInfo,
+    missions,
+    experiences,
+    skills: skillCategories,
+    articles,
+  });
+
+  const handleExport = () => {
+    const exportData = buildPortfolioData();
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `portfolio-data-${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast({ title: "Export réussi", description: "Le fichier JSON a été téléchargé." });
   };
 
-  const saveExperiences = (data: Experience[]) => {
-    localStorage.setItem("portfolio_experiences", JSON.stringify(data));
-    setExperiences(data);
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const content = await file.text();
+      const parsed = JSON.parse(content);
+
+      if (!isValidPortfolioData(parsed)) {
+        throw new Error("Le fichier ne respecte pas le format attendu.");
+      }
+
+      importData(parsed);
+      toast({ title: "Import réussi", description: "Les données ont été mises à jour." });
+    } catch (error) {
+      toast({
+        title: "Import échoué",
+        description: error instanceof Error ? error.message : "Impossible de lire le fichier sélectionné.",
+        variant: "destructive",
+      });
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
-  const saveSkills = (data: Skill[]) => {
-    localStorage.setItem("portfolio_skills", JSON.stringify(data));
-    setSkillCategories(data);
+  const handleSavePersonalInfo = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setPersonalInfo({ ...personalInfoForm });
+    updateSection("personalInfo", { ...personalInfoForm });
+    toast({ title: "Informations personnelles mises à jour" });
   };
 
-  const saveArticles = (data: Article[]) => {
-    localStorage.setItem("portfolio_articles", JSON.stringify(data));
-    setArticles(data);
-  };
-
-  const savePersonalInfo = (data: PersonalInfo) => {
-    localStorage.setItem("portfolio_personal_info", JSON.stringify(data));
-    setPersonalInfo(data);
-  };
-
-  // CRUD Operations for Missions
   const handleSaveMission = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
+
     const mission: Mission = {
-      id: editingMission?.id || Date.now().toString(),
-      title: formData.get("title") as string,
-      context: formData.get("context") as string,
-      objectifs: (formData.get("objectifs") as string).split("\n").filter(Boolean),
-      outils: (formData.get("outils") as string).split(",").map(s => s.trim()).filter(Boolean),
-      resultats: formData.get("resultats") as string,
-      competences: (formData.get("competences") as string).split(",").map(s => s.trim()).filter(Boolean),
+      id: editingMission?.id ?? createId(),
+      title: missionForm.title.trim(),
+      context: missionForm.context.trim(),
+      objectifs: missionForm.objectifs.split("\n").map(line => line.trim()).filter(Boolean),
+      outils: missionForm.outils.split(",").map(item => item.trim()).filter(Boolean),
+      resultats: missionForm.resultats.trim(),
+      competences: missionForm.competences.split(",").map(item => item.trim()).filter(Boolean),
     };
 
-    if (editingMission) {
-      saveMissions(missions.map(m => m.id === mission.id ? mission : m));
-      toast({ title: "Mission mise à jour" });
-    } else {
-      saveMissions([...missions, mission]);
-      toast({ title: "Mission ajoutée" });
-    }
-    
+    const updated = editingMission
+      ? missions.map(m => (m.id === mission.id ? mission : m))
+      : [...missions, mission];
+
+    setMissions(updated);
+    updateSection("missions", updated);
+    toast({ title: editingMission ? "Mission mise à jour" : "Mission ajoutée" });
     setEditingMission(null);
-    e.currentTarget.reset();
   };
 
   const deleteMission = (id: string) => {
-    saveMissions(missions.filter(m => m.id !== id));
+    const updated = missions.filter(m => m.id !== id);
+    setMissions(updated);
+    updateSection("missions", updated);
+    if (editingMission?.id === id) {
+      setEditingMission(null);
+    }
     toast({ title: "Mission supprimée" });
   };
 
-  // CRUD Operations for Experiences
   const handleSaveExperience = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
+
     const experience: Experience = {
-      id: editingExperience?.id || Date.now().toString(),
-      title: formData.get("title") as string,
-      company: formData.get("company") as string,
-      period: formData.get("period") as string,
-      location: formData.get("location") as string,
-      type: formData.get("type") as string,
-      missions: (formData.get("missions") as string).split("\n").filter(Boolean),
-      skills: (formData.get("skills") as string).split(",").map(s => s.trim()).filter(Boolean),
+      id: editingExperience?.id ?? createId(),
+      title: experienceForm.title.trim(),
+      company: experienceForm.company.trim(),
+      period: experienceForm.period.trim(),
+      location: experienceForm.location.trim(),
+      type: experienceForm.type.trim(),
+      missions: experienceForm.missions.split("\n").map(line => line.trim()).filter(Boolean),
+      skills: experienceForm.skills.split(",").map(item => item.trim()).filter(Boolean),
     };
 
-    if (editingExperience) {
-      saveExperiences(experiences.map(exp => exp.id === experience.id ? experience : exp));
-      toast({ title: "Expérience mise à jour" });
-    } else {
-      saveExperiences([...experiences, experience]);
-      toast({ title: "Expérience ajoutée" });
-    }
-    
+    const updated = editingExperience
+      ? experiences.map(exp => (exp.id === experience.id ? experience : exp))
+      : [...experiences, experience];
+
+    setExperiences(updated);
+    updateSection("experiences", updated);
+    toast({ title: editingExperience ? "Expérience mise à jour" : "Expérience ajoutée" });
     setEditingExperience(null);
-    e.currentTarget.reset();
   };
 
   const deleteExperience = (id: string) => {
-    saveExperiences(experiences.filter(exp => exp.id !== id));
+    const updated = experiences.filter(exp => exp.id !== id);
+    setExperiences(updated);
+    updateSection("experiences", updated);
+    if (editingExperience?.id === id) {
+      setEditingExperience(null);
+    }
     toast({ title: "Expérience supprimée" });
   };
 
-  // CRUD Operations for Skills
   const handleSaveSkill = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
-    const skill: Skill = {
-      id: editingSkill?.id || Date.now().toString(),
-      category: formData.get("category") as string,
-      skills: (formData.get("skills") as string).split(",").map(s => s.trim()).filter(Boolean),
+
+    const skill: SkillCategory = {
+      id: editingSkill?.id ?? createId(),
+      category: skillForm.category.trim(),
+      skills: skillForm.skills.split(",").map(item => item.trim()).filter(Boolean),
     };
 
-    if (editingSkill) {
-      saveSkills(skillCategories.map(s => s.id === skill.id ? skill : s));
-      toast({ title: "Catégorie mise à jour" });
-    } else {
-      saveSkills([...skillCategories, skill]);
-      toast({ title: "Catégorie ajoutée" });
-    }
-    
+    const updated = editingSkill
+      ? skillCategories.map(s => (s.id === skill.id ? skill : s))
+      : [...skillCategories, skill];
+
+    setSkillCategories(updated);
+    updateSection("skills", updated);
+    toast({ title: editingSkill ? "Catégorie mise à jour" : "Catégorie ajoutée" });
     setEditingSkill(null);
-    e.currentTarget.reset();
   };
 
   const deleteSkill = (id: string) => {
-    saveSkills(skillCategories.filter(s => s.id !== id));
+    const updated = skillCategories.filter(s => s.id !== id);
+    setSkillCategories(updated);
+    updateSection("skills", updated);
+    if (editingSkill?.id === id) {
+      setEditingSkill(null);
+    }
     toast({ title: "Catégorie supprimée" });
   };
 
-  // CRUD Operations for Articles
   const handleSaveArticle = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
+
     const article: Article = {
-      id: editingArticle?.id || Date.now().toString(),
-      title: formData.get("article-title") as string,
-      description: formData.get("article-description") as string,
-      date: formData.get("article-date") as string,
-      category: formData.get("article-category") as string,
-      tags: (formData.get("article-tags") as string).split(",").map(s => s.trim()).filter(Boolean),
-      url: formData.get("article-url") as string,
+      id: editingArticle?.id ?? createId(),
+      title: articleForm.title.trim(),
+      description: articleForm.description.trim(),
+      date: articleForm.date,
+      category: articleForm.category.trim(),
+      tags: articleForm.tags.split(",").map(item => item.trim()).filter(Boolean),
+      url: articleForm.url.trim(),
     };
 
-    if (editingArticle) {
-      saveArticles(articles.map(a => a.id === article.id ? article : a));
-      toast({ title: "Article mis à jour" });
-    } else {
-      saveArticles([...articles, article]);
-      toast({ title: "Article ajouté" });
-    }
-    
+    const updated = editingArticle
+      ? articles.map(a => (a.id === article.id ? article : a))
+      : [...articles, article];
+
+    setArticles(updated);
+    updateSection("articles", updated);
+    toast({ title: editingArticle ? "Article mis à jour" : "Article ajouté" });
     setEditingArticle(null);
-    e.currentTarget.reset();
   };
 
   const deleteArticle = (id: string) => {
-    saveArticles(articles.filter(a => a.id !== id));
+    const updated = articles.filter(a => a.id !== id);
+    setArticles(updated);
+    updateSection("articles", updated);
+    if (editingArticle?.id === id) {
+      setEditingArticle(null);
+    }
     toast({ title: "Article supprimé" });
-  };
-
-  // Personal Info Operations
-  const handleSavePersonalInfo = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
-    const info: PersonalInfo = {
-      name: formData.get("name") as string,
-      title: formData.get("title") as string,
-      specialization: formData.get("specialization") as string,
-      description: formData.get("description") as string,
-    };
-
-    savePersonalInfo(info);
-    toast({ title: "Informations personnelles mises à jour" });
   };
 
   return (
@@ -261,10 +334,49 @@ const Admin = () => {
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-2">Administration</h1>
           <p className="text-muted-foreground">Gérer le contenu du portfolio</p>
-          <Button variant="outline" className="mt-4" onClick={() => window.location.href = "/"}>
+          <Button variant="outline" className="mt-4" onClick={() => (window.location.href = "/")}>
             Retour au portfolio
           </Button>
         </div>
+
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Gestion des données</CardTitle>
+            <CardDescription>
+              Importez un fichier <code>data.json</code> pour mettre à jour le site ou exportez la configuration actuelle.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="text-sm text-muted-foreground space-y-2">
+              <p>Les modifications sont stockées localement et peuvent être sauvegardées via un fichier JSON.</p>
+              <p>
+                Utilisez l'export pour créer une copie de sauvegarde puis remplacez <code>public/data.json</code> lors d'un
+                déploiement pour rendre les changements permanents.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/json"
+                className="hidden"
+                onChange={handleImport}
+              />
+              <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isLoading}>
+                <Upload className="w-4 h-4 mr-2" />
+                Importer data.json
+              </Button>
+              <Button onClick={handleExport} disabled={isLoading}>
+                <Download className="w-4 h-4 mr-2" />
+                Exporter les données
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {isLoading && (
+          <p className="mb-6 text-sm text-muted-foreground">Chargement des données en cours…</p>
+        )}
 
         <Tabs defaultValue="profile" className="w-full">
           <TabsList className="grid w-full grid-cols-5">
@@ -285,23 +397,46 @@ const Admin = () => {
                 <form onSubmit={handleSavePersonalInfo} className="space-y-4">
                   <div>
                     <Label htmlFor="name">Nom complet</Label>
-                    <Input id="name" name="name" defaultValue={personalInfo.name} required />
+                    <Input
+                      id="name"
+                      name="name"
+                      value={personalInfoForm.name}
+                      onChange={e => setPersonalInfoForm(prev => ({ ...prev, name: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
                     <Label htmlFor="title">Titre/Formation</Label>
-                    <Input id="title" name="title" defaultValue={personalInfo.title} required />
+                    <Input
+                      id="title"
+                      name="title"
+                      value={personalInfoForm.title}
+                      onChange={e => setPersonalInfoForm(prev => ({ ...prev, title: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
                     <Label htmlFor="specialization">Spécialisation</Label>
-                    <Input id="specialization" name="specialization" defaultValue={personalInfo.specialization} required />
+                    <Input
+                      id="specialization"
+                      name="specialization"
+                      value={personalInfoForm.specialization}
+                      onChange={e => setPersonalInfoForm(prev => ({ ...prev, specialization: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
                     <Label htmlFor="description">Description</Label>
-                    <Textarea id="description" name="description" defaultValue={personalInfo.description} rows={5} required />
+                    <Textarea
+                      id="description"
+                      name="description"
+                      value={personalInfoForm.description}
+                      onChange={e => setPersonalInfoForm(prev => ({ ...prev, description: e.target.value }))}
+                      rows={5}
+                      required
+                    />
                   </div>
-                  <Button type="submit">
-                    Mettre à jour le profil
-                  </Button>
+                  <Button type="submit">Mettre à jour le profil</Button>
                 </form>
               </CardContent>
             </Card>
@@ -316,28 +451,64 @@ const Admin = () => {
               <CardContent>
                 <form onSubmit={handleSaveMission} className="space-y-4">
                   <div>
-                    <Label htmlFor="title">Titre</Label>
-                    <Input id="title" name="title" defaultValue={editingMission?.title} required />
+                    <Label htmlFor="mission-title">Titre</Label>
+                    <Input
+                      id="mission-title"
+                      name="title"
+                      value={missionForm.title}
+                      onChange={e => setMissionForm(prev => ({ ...prev, title: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="context">Contexte</Label>
-                    <Textarea id="context" name="context" defaultValue={editingMission?.context} required />
+                    <Label htmlFor="mission-context">Contexte</Label>
+                    <Textarea
+                      id="mission-context"
+                      name="context"
+                      value={missionForm.context}
+                      onChange={e => setMissionForm(prev => ({ ...prev, context: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="objectifs">Objectifs (un par ligne)</Label>
-                    <Textarea id="objectifs" name="objectifs" defaultValue={editingMission?.objectifs.join("\n")} required />
+                    <Label htmlFor="mission-objectifs">Objectifs (un par ligne)</Label>
+                    <Textarea
+                      id="mission-objectifs"
+                      name="objectifs"
+                      value={missionForm.objectifs}
+                      onChange={e => setMissionForm(prev => ({ ...prev, objectifs: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="outils">Outils (séparés par virgule)</Label>
-                    <Input id="outils" name="outils" defaultValue={editingMission?.outils.join(", ")} required />
+                    <Label htmlFor="mission-outils">Outils (séparés par virgule)</Label>
+                    <Input
+                      id="mission-outils"
+                      name="outils"
+                      value={missionForm.outils}
+                      onChange={e => setMissionForm(prev => ({ ...prev, outils: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="resultats">Résultats</Label>
-                    <Textarea id="resultats" name="resultats" defaultValue={editingMission?.resultats} required />
+                    <Label htmlFor="mission-resultats">Résultats</Label>
+                    <Textarea
+                      id="mission-resultats"
+                      name="resultats"
+                      value={missionForm.resultats}
+                      onChange={e => setMissionForm(prev => ({ ...prev, resultats: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="competences">Compétences (séparées par virgule)</Label>
-                    <Input id="competences" name="competences" defaultValue={editingMission?.competences.join(", ")} required />
+                    <Label htmlFor="mission-competences">Compétences (séparées par virgule)</Label>
+                    <Input
+                      id="mission-competences"
+                      name="competences"
+                      value={missionForm.competences}
+                      onChange={e => setMissionForm(prev => ({ ...prev, competences: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div className="flex gap-2">
                     <Button type="submit">
@@ -387,32 +558,75 @@ const Admin = () => {
               <CardContent>
                 <form onSubmit={handleSaveExperience} className="space-y-4">
                   <div>
-                    <Label htmlFor="exp-title">Titre</Label>
-                    <Input id="exp-title" name="title" defaultValue={editingExperience?.title} required />
+                    <Label htmlFor="experience-title">Titre</Label>
+                    <Input
+                      id="experience-title"
+                      name="title"
+                      value={experienceForm.title}
+                      onChange={e => setExperienceForm(prev => ({ ...prev, title: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="company">Entreprise/Organisation</Label>
-                    <Input id="company" name="company" defaultValue={editingExperience?.company} required />
+                    <Label htmlFor="experience-company">Entreprise/Organisation</Label>
+                    <Input
+                      id="experience-company"
+                      name="company"
+                      value={experienceForm.company}
+                      onChange={e => setExperienceForm(prev => ({ ...prev, company: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="period">Période</Label>
-                    <Input id="period" name="period" defaultValue={editingExperience?.period} required />
+                    <Label htmlFor="experience-period">Période</Label>
+                    <Input
+                      id="experience-period"
+                      name="period"
+                      value={experienceForm.period}
+                      onChange={e => setExperienceForm(prev => ({ ...prev, period: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="location">Lieu</Label>
-                    <Input id="location" name="location" defaultValue={editingExperience?.location} required />
+                    <Label htmlFor="experience-location">Lieu</Label>
+                    <Input
+                      id="experience-location"
+                      name="location"
+                      value={experienceForm.location}
+                      onChange={e => setExperienceForm(prev => ({ ...prev, location: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="type">Type</Label>
-                    <Input id="type" name="type" defaultValue={editingExperience?.type} placeholder="Stage, Projet, Bénévolat..." required />
+                    <Label htmlFor="experience-type">Type</Label>
+                    <Input
+                      id="experience-type"
+                      name="type"
+                      placeholder="Stage, Projet, Bénévolat..."
+                      value={experienceForm.type}
+                      onChange={e => setExperienceForm(prev => ({ ...prev, type: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="exp-missions">Missions (une par ligne)</Label>
-                    <Textarea id="exp-missions" name="missions" defaultValue={editingExperience?.missions.join("\n")} required />
+                    <Label htmlFor="experience-missions">Missions (une par ligne)</Label>
+                    <Textarea
+                      id="experience-missions"
+                      name="missions"
+                      value={experienceForm.missions}
+                      onChange={e => setExperienceForm(prev => ({ ...prev, missions: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="exp-skills">Compétences (séparées par virgule)</Label>
-                    <Input id="exp-skills" name="skills" defaultValue={editingExperience?.skills.join(", ")} required />
+                    <Label htmlFor="experience-skills">Compétences (séparées par virgule)</Label>
+                    <Input
+                      id="experience-skills"
+                      name="skills"
+                      value={experienceForm.skills}
+                      onChange={e => setExperienceForm(prev => ({ ...prev, skills: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div className="flex gap-2">
                     <Button type="submit">
@@ -462,12 +676,24 @@ const Admin = () => {
               <CardContent>
                 <form onSubmit={handleSaveSkill} className="space-y-4">
                   <div>
-                    <Label htmlFor="category">Catégorie</Label>
-                    <Input id="category" name="category" defaultValue={editingSkill?.category} required />
+                    <Label htmlFor="skill-category">Catégorie</Label>
+                    <Input
+                      id="skill-category"
+                      name="category"
+                      value={skillForm.category}
+                      onChange={e => setSkillForm(prev => ({ ...prev, category: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="cat-skills">Compétences (séparées par virgule)</Label>
-                    <Textarea id="cat-skills" name="skills" defaultValue={editingSkill?.skills.join(", ")} required />
+                    <Label htmlFor="skill-list">Compétences (séparées par virgule)</Label>
+                    <Textarea
+                      id="skill-list"
+                      name="skills"
+                      value={skillForm.skills}
+                      onChange={e => setSkillForm(prev => ({ ...prev, skills: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div className="flex gap-2">
                     <Button type="submit">
@@ -518,27 +744,65 @@ const Admin = () => {
                 <form onSubmit={handleSaveArticle} className="space-y-4">
                   <div>
                     <Label htmlFor="article-title">Titre</Label>
-                    <Input id="article-title" name="article-title" defaultValue={editingArticle?.title} required />
+                    <Input
+                      id="article-title"
+                      name="article-title"
+                      value={articleForm.title}
+                      onChange={e => setArticleForm(prev => ({ ...prev, title: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
                     <Label htmlFor="article-description">Description</Label>
-                    <Textarea id="article-description" name="article-description" defaultValue={editingArticle?.description} required />
+                    <Textarea
+                      id="article-description"
+                      name="article-description"
+                      value={articleForm.description}
+                      onChange={e => setArticleForm(prev => ({ ...prev, description: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
                     <Label htmlFor="article-date">Date</Label>
-                    <Input id="article-date" name="article-date" type="date" defaultValue={editingArticle?.date} required />
+                    <Input
+                      id="article-date"
+                      name="article-date"
+                      type="date"
+                      value={articleForm.date}
+                      onChange={e => setArticleForm(prev => ({ ...prev, date: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
                     <Label htmlFor="article-category">Catégorie</Label>
-                    <Input id="article-category" name="article-category" defaultValue={editingArticle?.category} required />
+                    <Input
+                      id="article-category"
+                      name="article-category"
+                      value={articleForm.category}
+                      onChange={e => setArticleForm(prev => ({ ...prev, category: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
                     <Label htmlFor="article-tags">Tags (séparés par virgule)</Label>
-                    <Input id="article-tags" name="article-tags" defaultValue={editingArticle?.tags.join(", ")} required />
+                    <Input
+                      id="article-tags"
+                      name="article-tags"
+                      value={articleForm.tags}
+                      onChange={e => setArticleForm(prev => ({ ...prev, tags: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div>
                     <Label htmlFor="article-url">URL</Label>
-                    <Input id="article-url" name="article-url" type="url" defaultValue={editingArticle?.url} required />
+                    <Input
+                      id="article-url"
+                      name="article-url"
+                      type="url"
+                      value={articleForm.url}
+                      onChange={e => setArticleForm(prev => ({ ...prev, url: e.target.value }))}
+                      required
+                    />
                   </div>
                   <div className="flex gap-2">
                     <Button type="submit">
@@ -562,7 +826,9 @@ const Admin = () => {
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="font-semibold text-lg">{article.title}</h3>
-                        <p className="text-sm text-muted-foreground">{article.category} - {new Date(article.date).toLocaleDateString('fr-FR')}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {article.category} - {new Date(article.date).toLocaleDateString("fr-FR")}
+                        </p>
                       </div>
                       <div className="flex gap-2">
                         <Button variant="ghost" size="icon" onClick={() => setEditingArticle(article)}>
