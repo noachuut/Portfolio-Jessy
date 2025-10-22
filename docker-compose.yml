@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  portfolio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: portfolio-jessy
+    restart: unless-stopped
+    ports:
+      - "8005:8005"
+    environment:
+      - NODE_ENV=production

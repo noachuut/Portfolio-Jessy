@@ -1,73 +1,42 @@
-# Welcome to your Lovable project
+# Portfolio Jessy
 
-## Project info
+Application React (Vite + TypeScript) pour présenter le portfolio de Jessy Amestoy. Le contenu du site est entièrement éditable via une interface d'administration et peut être synchronisé avec un fichier `data.json` afin de conserver les modifications dans le temps.
 
-**URL**: https://lovable.dev/projects/4899e447-c391-4720-ba53-1aa23165664a
+## Gestion des données (`data.json`)
 
-## How can I edit this code?
+- Le fichier `public/data.json` contient l'ensemble des informations affichées (profil, missions, expériences, compétences, veille technologique).
+- L'interface `/admin` permet d'ajouter, modifier ou supprimer chaque élément. Les formulaires sont entièrement contrôlés : cliquez sur l'icône crayon pour éditer un enregistrement existant.
+- Depuis l'onglet d'administration, utilisez les boutons :
+  - **Importer data.json** : charge un fichier JSON valide et met immédiatement à jour le site.
+  - **Exporter les données** : télécharge le contenu actuel au format JSON (utile pour sauvegarder ou versionner les changements).
+- Après un export, remplacez le fichier `public/data.json` avant un nouveau déploiement pour partager les modifications à tous les visiteurs.
 
-There are several ways of editing your application.
+## Démarrage en local
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/4899e447-c391-4720-ba53-1aa23165664a) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+L'interface d'administration est disponible sur `http://localhost:5173/admin` (port par défaut de Vite).
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Déploiement avec Docker
 
-**Use GitHub Codespaces**
+Une image Docker multi-étapes est fournie pour construire l'application puis la servir via le paquet [`serve`](https://www.npmjs.com/package/serve).
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Construction et exécution
 
-## What technologies are used for this project?
+```bash
+docker-compose up --build -d
+```
 
-This project is built with:
+- Le service `portfolio` expose le port `8005` dans le conteneur et sur la machine hôte (modifiez le mapping dans `docker-compose.yml` si nécessaire).
+- Pour l'intégrer avec Nginx Proxy Manager, rattachez ce conteneur au même réseau Docker que votre proxy puis créez un nouvel hôte proxy pointant vers `portfolio:8005`.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Mise à jour du contenu en production
 
-## How can I deploy this project?
+1. Exportez les données depuis `/admin` pour récupérer un fichier JSON contenant vos modifications.
+2. Remplacez `public/data.json` dans votre dépôt ou montage volume.
+3. Redeployez le conteneur (`docker-compose build` puis `docker-compose up -d`) afin de publier les nouveaux contenus.
 
-Simply open [Lovable](https://lovable.dev/projects/4899e447-c391-4720-ba53-1aa23165664a) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Grâce à cette approche, vous pouvez itérer sur le contenu sans modifier le code source et conserver une trace versionnée de chaque évolution.
