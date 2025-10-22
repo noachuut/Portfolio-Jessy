@@ -27,16 +27,17 @@ Une image Docker multi-étapes est fournie pour construire l'application puis la
 ### Construction et exécution
 
 ```bash
-docker-compose up --build -d
+docker build -t portfolio-jessy .
+docker run -d --name portfolio -p 8005:8005 portfolio-jessy
 ```
 
-- Le service `portfolio` expose le port `8005` dans le conteneur et sur la machine hôte (modifiez le mapping dans `docker-compose.yml` si nécessaire).
-- Pour l'intégrer avec Nginx Proxy Manager, rattachez ce conteneur au même réseau Docker que votre proxy puis créez un nouvel hôte proxy pointant vers `portfolio:8005`.
+- Le conteneur écoute sur le port `8005`. Adaptez la commande `docker run` si vous souhaitez exposer un autre port sur la machine hôte.
+- Pour l'intégrer avec Nginx Proxy Manager, rattachez le conteneur au réseau Docker de votre proxy (`docker network connect <réseau> portfolio`) puis créez un hôte pointant vers `portfolio:8005`.
 
 ## Mise à jour du contenu en production
 
 1. Exportez les données depuis `/admin` pour récupérer un fichier JSON contenant vos modifications.
 2. Remplacez `public/data.json` dans votre dépôt ou montage volume.
-3. Redeployez le conteneur (`docker-compose build` puis `docker-compose up -d`) afin de publier les nouveaux contenus.
+3. Reconstruisez l'image (`docker build -t portfolio-jessy .`) puis redémarrez le conteneur (`docker stop portfolio && docker rm portfolio && docker run -d --name portfolio -p 8005:8005 portfolio-jessy`) pour publier les nouveaux contenus.
 
 Grâce à cette approche, vous pouvez itérer sur le contenu sans modifier le code source et conserver une trace versionnée de chaque évolution.
