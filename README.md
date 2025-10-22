@@ -22,7 +22,7 @@ L'interface d'administration est disponible sur `http://localhost:5173/admin` (p
 
 ## Déploiement avec Docker
 
-Un environnement Docker multi-étapes est fourni pour construire l'application et la servir via Nginx.
+Une image Docker multi-étapes est fournie pour construire l'application puis la servir via le paquet [`serve`](https://www.npmjs.com/package/serve).
 
 ### Construction et exécution
 
@@ -30,12 +30,8 @@ Un environnement Docker multi-étapes est fourni pour construire l'application e
 docker-compose up --build -d
 ```
 
-- Le service `portfolio` expose le port 80 dans le conteneur. Par défaut, il est mappé sur le port `8080` de l'hôte (modifiable dans `docker-compose.yml`).
-- Pour l'intégrer avec Nginx Proxy Manager, rattachez ce conteneur au même réseau Docker que votre proxy et créez un nouvel hôte proxy pointant vers `portfolio:80`.
-
-### Structure Nginx
-
-Le fichier `docker/nginx.conf` sert l'application en mode SPA : toutes les routes sont redirigées vers `index.html` et le dossier `assets/` est mis en cache.
+- Le service `portfolio` expose le port `8052` dans le conteneur et sur la machine hôte (modifiez le mapping dans `docker-compose.yml` si nécessaire).
+- Pour l'intégrer avec Nginx Proxy Manager, rattachez ce conteneur au même réseau Docker que votre proxy puis créez un nouvel hôte proxy pointant vers `portfolio:8052`.
 
 ## Mise à jour du contenu en production
 
