@@ -11,5 +11,5 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 RUN npm install -g serve@14
 COPY --from=builder /app/dist ./dist
-EXPOSE 8005
-CMD ["serve", "-s", "dist", "-l", "8005"]
+EXPOSE 80
+
