@@ -8,6 +8,6 @@ services:
     container_name: portfolio-jessy
     restart: unless-stopped
     ports:
-      - "8052:8052"
+      - "8005:8080"
     environment:
       - NODE_ENV=production

@@ -30,8 +30,8 @@ Une image Docker multi-étapes est fournie pour construire l'application puis la
 docker-compose up --build -d
 ```
 
-- Le service `portfolio` expose le port `8052` dans le conteneur et sur la machine hôte (modifiez le mapping dans `docker-compose.yml` si nécessaire).
-- Pour l'intégrer avec Nginx Proxy Manager, rattachez ce conteneur au même réseau Docker que votre proxy puis créez un nouvel hôte proxy pointant vers `portfolio:8052`.
+- Le service `portfolio` expose le port `8005` dans le conteneur et sur la machine hôte (modifiez le mapping dans `docker-compose.yml` si nécessaire).
+- Pour l'intégrer avec Nginx Proxy Manager, rattachez ce conteneur au même réseau Docker que votre proxy puis créez un nouvel hôte proxy pointant vers `portfolio:8005`.
 
 ## Mise à jour du contenu en production
 
