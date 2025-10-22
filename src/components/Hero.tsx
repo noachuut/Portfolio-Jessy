@@ -2,29 +2,12 @@ import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
 import heroBackground from "@/assets/hero-bg.jpg";
 import avatar from "@/assets/avatar.png";
-import { useState, useEffect } from "react";
-
-interface PersonalInfo {
-  name: string;
-  title: string;
-  specialization: string;
-  description: string;
-}
+import defaultData from "@/data/defaultData";
+import { usePortfolioData } from "@/lib/portfolio-data";
 
 const Hero = () => {
-  const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
-    name: "Jessy Amestoy",
-    title: "Étudiant en BTS SIO SISR",
-    specialization: "Spécialiste Réseaux",
-    description: "Passionné par les infrastructures réseau et l'administration système, je développe mes compétences techniques à travers des projets concrets et des missions professionnelles. Mon objectif : devenir technicien réseau ou administrateur systèmes, avec une vision d'évolution vers une licence professionnelle."
-  });
-
-  useEffect(() => {
-    const storedInfo = localStorage.getItem("portfolio_personal_info");
-    if (storedInfo) {
-      setPersonalInfo(JSON.parse(storedInfo));
-    }
-  }, []);
+  const { data } = usePortfolioData();
+  const personalInfo = data.personalInfo ?? defaultData.personalInfo;
 
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -34,9 +17,9 @@ const Hero = () => {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background avec overlay */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src={heroBackground} 
-          alt="Background" 
+        <img
+          src={heroBackground}
+          alt="Background"
           className="w-full h-full object-cover opacity-20"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
@@ -48,9 +31,9 @@ const Hero = () => {
           {/* Avatar */}
           <div className="mb-8 flex justify-center">
             <div className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full overflow-hidden border-4 border-primary/20 shadow-soft hover:shadow-hover transition-smooth">
-              <img 
-                src={avatar} 
-                alt="Avatar professionnel" 
+              <img
+                src={avatar}
+                alt="Avatar professionnel"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -76,14 +59,14 @@ const Hero = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button 
+            <Button
               size="lg"
               className="w-full sm:w-auto gradient-primary text-white shadow-soft hover:shadow-hover transition-smooth border-0"
               onClick={() => scrollToSection("missions")}
             >
               Voir mes missions
             </Button>
-            <Button 
+            <Button
               size="lg"
               variant="outline"
               className="w-full sm:w-auto border-primary/30 hover:border-primary hover:bg-primary/5 transition-smooth"

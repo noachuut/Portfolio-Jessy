@@ -1,0 +1,202 @@
+{
+  "personalInfo": {
+    "name": "Jessy Amestoy",
+    "title": "Étudiant en BTS SIO SISR",
+    "specialization": "Spécialiste Réseaux",
+    "description": "Passionné par les infrastructures réseau et l'administration système, je développe mes compétences techniques à travers des projets concrets et des missions professionnelles. Mon objectif : devenir technicien réseau ou administrateur systèmes, avec une vision d'évolution vers une licence professionnelle."
+  },
+  "missions": [
+    {
+      "id": "mission-1",
+      "title": "Mise en place d'un serveur DHCP",
+      "context": "Infrastructure réseau d'entreprise nécessitant une gestion automatisée des adresses IP",
+      "objectifs": [
+        "Configurer un serveur DHCP sous Windows Server 2022",
+        "Définir les plages d'adresses et les réservations",
+        "Mettre en place la redondance et la haute disponibilité"
+      ],
+      "outils": ["Windows Server 2022", "Active Directory", "PowerShell"],
+      "resultats": "Attribution automatique de 200+ adresses IP avec un taux de disponibilité de 99.9%",
+      "competences": ["Administration système", "Protocoles réseau", "Windows Server"]
+    },
+    {
+      "id": "mission-2",
+      "title": "Configuration réseau VLAN avec supervision",
+      "context": "Segmentation réseau pour améliorer la sécurité et les performances",
+      "objectifs": [
+        "Créer et configurer plusieurs VLANs",
+        "Mettre en place le routage inter-VLAN",
+        "Déployer une solution de supervision avec Zabbix"
+      ],
+      "outils": ["Cisco Switch", "VLAN", "Zabbix", "SNMP"],
+      "resultats": "Isolation réussie de 5 départements avec monitoring temps réel et alertes automatiques",
+      "competences": ["Réseaux", "Sécurité", "Supervision", "Cisco"]
+    },
+    {
+      "id": "mission-3",
+      "title": "Sécurisation infrastructure et sauvegardes",
+      "context": "Renforcement de la sécurité du système d'information",
+      "objectifs": [
+        "Configurer un pare-feu et des règles de filtrage",
+        "Mettre en place une politique de sauvegardes",
+        "Créer des comptes utilisateurs avec droits limités"
+      ],
+      "outils": ["pfSense", "Windows Backup", "Group Policy", "Active Directory"],
+      "resultats": "Réduction de 80% des tentatives d'intrusion et sauvegardes quotidiennes automatisées",
+      "competences": ["Cybersécurité", "Administration", "Gestion des accès"]
+    }
+  ],
+  "experiences": [
+    {
+      "id": "experience-1",
+      "title": "Stage Technicien Réseau",
+      "company": "Entreprise XYZ",
+      "period": "Juin 2024 - Août 2024",
+      "location": "Paris, France",
+      "type": "Stage",
+      "missions": [
+        "Configuration et déploiement de switches Cisco",
+        "Mise en place de VLANs pour la segmentation réseau",
+        "Support technique niveau 1 et 2",
+        "Documentation des procédures réseau"
+      ],
+      "skills": ["Cisco", "VLAN", "Support technique", "Documentation"]
+    },
+    {
+      "id": "experience-2",
+      "title": "Projet Académique - Serveur Windows",
+      "company": "BTS SIO SISR",
+      "period": "Janvier 2024 - Mars 2024",
+      "location": "Établissement scolaire",
+      "type": "Projet",
+      "missions": [
+        "Installation et configuration de Windows Server 2022",
+        "Mise en place d'Active Directory",
+        "Configuration DHCP et DNS",
+        "Gestion des GPO et des utilisateurs"
+      ],
+      "skills": ["Windows Server", "Active Directory", "DHCP", "DNS"]
+    },
+    {
+      "id": "experience-3",
+      "title": "Assistant Support Informatique",
+      "company": "Association locale",
+      "period": "Septembre 2023 - Décembre 2023",
+      "location": "France",
+      "type": "Bénévolat",
+      "missions": [
+        "Assistance utilisateurs sur problèmes logiciels",
+        "Installation et configuration de postes de travail",
+        "Maintenance préventive du parc informatique",
+        "Formation des utilisateurs aux outils bureautiques"
+      ],
+      "skills": ["Support utilisateur", "Windows", "Formation", "Maintenance"]
+    }
+  ],
+  "skills": [
+    {
+      "id": "skill-1",
+      "category": "Réseaux",
+      "skills": [
+        "Configuration Cisco",
+        "VLAN & Routage",
+        "DHCP & DNS",
+        "Protocoles TCP/IP",
+        "Supervision réseau"
+      ]
+    },
+    {
+      "id": "skill-2",
+      "category": "Systèmes",
+      "skills": [
+        "Windows Server",
+        "Linux (Debian/Ubuntu)",
+        "VirtualBox & VMware",
+        "Active Directory",
+        "PowerShell"
+      ]
+    },
+    {
+      "id": "skill-3",
+      "category": "Sécurité",
+      "skills": [
+        "Pare-feu (pfSense)",
+        "Sauvegardes",
+        "Gestion des accès",
+        "Politiques de sécurité",
+        "Chiffrement"
+      ]
+    },
+    {
+      "id": "skill-4",
+      "category": "Support & Communication",
+      "skills": [
+        "Support technique",
+        "Travail d'équipe",
+        "Gestion de projet",
+        "Communication client",
+        "Formation utilisateurs"
+      ]
+    },
+    {
+      "id": "skill-5",
+      "category": "Documentation",
+      "skills": [
+        "Rédaction technique",
+        "Procédures",
+        "Diagrammes réseau",
+        "Rapports d'activité",
+        "Veille technologique"
+      ]
+    },
+    {
+      "id": "skill-6",
+      "category": "Outils",
+      "skills": [
+        "Zabbix (monitoring)",
+        "Wireshark",
+        "Packet Tracer",
+        "Git & GitHub",
+        "Microsoft Office"
+      ]
+    }
+  ],
+  "articles": [
+    {
+      "id": "article-1",
+      "title": "L'évolution de l'Intelligence Artificielle en 2024",
+      "description": "Découverte des dernières avancées en IA et leur impact sur l'infrastructure réseau.",
+      "date": "2024-03-15",
+      "category": "Intelligence Artificielle",
+      "tags": ["IA", "Machine Learning", "Cloud"],
+      "url": "#"
+    },
+    {
+      "id": "article-2",
+      "title": "Cybersécurité : Les nouvelles menaces 2024",
+      "description": "Analyse des vulnérabilités récentes et des meilleures pratiques de sécurité.",
+      "date": "2024-03-10",
+      "category": "Sécurité",
+      "tags": ["Cybersécurité", "Sécurité Réseau", "Protection"],
+      "url": "#"
+    },
+    {
+      "id": "article-3",
+      "title": "Docker et Kubernetes : Guide pratique",
+      "description": "Conteneurisation et orchestration pour une infrastructure moderne.",
+      "date": "2024-03-05",
+      "category": "DevOps",
+      "tags": ["Docker", "Kubernetes", "Conteneurisation"],
+      "url": "#"
+    },
+    {
+      "id": "article-4",
+      "title": "IPv6 : Migration et implémentation",
+      "description": "Les enjeux de la transition vers IPv6 dans les entreprises.",
+      "date": "2024-02-28",
+      "category": "Réseaux",
+      "tags": ["IPv6", "Protocoles", "Infrastructure"],
+      "url": "#"
+    }
+  ]
+}
